@@ -3,11 +3,11 @@ const cors = require('cors')
 const os = require('os');
 const authRouter = require('./routes/authRoutes');
 const dotenv = require('dotenv');
-const { initializeNatsConnection } = require('./utils/natsUtil');
+// const { initializeNatsConnection } = require('./utils/natsUtil');
 require('./db/conn')
 
 // Initialize NATS connection
-initializeNatsConnection();
+// initializeNatsConnection();
 
 dotenv.config();
 // Set up the express app
