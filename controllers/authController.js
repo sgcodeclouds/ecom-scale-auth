@@ -5,7 +5,7 @@ const appUtil = require('../utils/appUtil')
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const { generateAccessToken, authenticateToken } = require("../utils/authUtil");
-const { getNatsConnection } = require('../utils/natsUtil');
+// const { getNatsConnection } = require('../utils/natsUtil');
 const { StringCodec } = require("nats");
 dotenv.config();
 
@@ -19,9 +19,14 @@ const signUp = async (req, res) => {
         return;
     }
 
+    const userA = await userModel.findOne({ email: req.body.email });
+    if (userA != null) {
+        return res.status(200).json({ message: 'Alreadt exist user' });
+    }
+
     // try {
-        role =  roleModel.findById(req.body.role);
-        console.log(role)
+        role =  await roleModel.findById(req.body.role);
+        // console.log("role ",role)
         if (role == null) {
             return res.status(404).json({ message: 'Cannot find role' });
         }
@@ -37,7 +42,7 @@ const signUp = async (req, res) => {
     // }
 
     // console.log("next otp validation");
-    console.log(req.body)
+    // console.log(req.body)
     
     const user = new userModel({
         name: req.body.name,
@@ -48,23 +53,26 @@ const signUp = async (req, res) => {
         isVerified: false,
         emailOtp: appUtil.generateOtp()
     });
+
+    console.log(user)
     
     try {
         const newUser = await user.save();
 
         try {
             // Your user creation logic here
+            console.log('New user created '+newUser)
         
-            // Assuming user creation is successful, publish message
-            const nc = getNatsConnection();
-            if (nc) {
-                console.log('New user created '+newUser)
-              nc.publish(subject, sc.encode('New user created '+newUser));
-            //   res.status(201).json({ message: 'User created successfully' });
-            } else {
-              console.error('NATS connection is not initialized!');
-            //   res.status(500).json({ error: 'Internal server error' });
-            }
+            // // Assuming user creation is successful, publish message
+            // const nc = getNatsConnection();
+            // if (nc) {
+            //     console.log('New user created '+newUser)
+            //   nc.publish(subject, sc.encode('New user created '+newUser));
+            // //   res.status(201).json({ message: 'User created successfully' });
+            // } else {
+            //   console.error('NATS connection is not initialized!');
+            // //   res.status(500).json({ error: 'Internal server error' });
+            // }
           } catch (error) {
             console.error(error);
             // res.status(500).json({ error: 'Internal server error' });
